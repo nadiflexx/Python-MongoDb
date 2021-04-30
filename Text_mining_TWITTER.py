@@ -24,6 +24,7 @@ class Tokens:
         # Collections
         self.barcelona = db.Barcelona  # Platforms
         self.text = ""
+        self.all_twitts = []
 
     def tokenizacion(self):
 
@@ -66,6 +67,7 @@ class Tokens:
             if word not in simbolos:
                 self.text_sin_symbolos.append(word)
                 # self.text_sin_emojis.append(emoji.get_emoji_regexp().sub(u'', word))
+        self.all_twitts.append(self.text_sin_symbolos)
         print(f"Stopwords: {self.text_limpio}")
         print(f"Text without symbols: {self.text_sin_symbolos}")
 
@@ -75,7 +77,7 @@ class Tokens:
         # Hemos cogido el listado de palabras generado antes self.text_limpio
         wordcloud = WordCloud(width=800, height=800,
                               background_color='white',
-                              stopwords=self.text_sin_emojis, max_words=40)
+                              stopwords=self.text_sin_symbolos, max_words=40)
 
         wordcloud.generate(self.text)
 
@@ -111,14 +113,16 @@ class Tokens:
             self.tokenizacion()
             self.stopwords()
             self.frequency()
-            # Visualización de datos
-            # tokens.word_cloud()
-            # tokens.dist_probabilidad()
-
-            # Sentimental analysis
-            # tokens.sentimental_analysis()
-            # tokens.bar()
             print()
+
+        # Visualización de datos
+        print(self.all_twitts)
+        self.word_cloud()
+        self.dist_probabilidad()
+        # Sentimental analysis
+        # tokens.sentimental_analysis()
+        # tokens.bar()
+
 
 
 if __name__ == "__main__":
