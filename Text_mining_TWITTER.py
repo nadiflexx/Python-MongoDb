@@ -18,10 +18,9 @@ class Tokens:
         # Mongodb database and repository
         db = self.conn.Twitter
         # Collections
-        self.barcelona = db.Barcelona  # Platforms
+        self.football = db.Futbol  # Platforms
         self.text = ""
-        self.activity = ""
-        self.all_tweets_activity = []
+        self.language = ""
         self.all_tweets_text = ""
         self.all_tweets_text_array = []
 
@@ -31,7 +30,6 @@ class Tokens:
 
         # Word tokenization
         self.word_tokenizacion = word_tokenize(self.text)
-        self.all_tweets_activity.append(word_tokenize(self.activity)[3][3:-3])
         print(f"Sentence Tokenization: {text_tokenization}")
         print(f"Word Tokenization: {self.word_tokenizacion}")
 
@@ -61,16 +59,18 @@ class Tokens:
 
         self.text_without_emojis = []
 
-        symbols = ["@", "!", ":", "(", ")", "RT", ",", "https", ".", "?", "#", "|"]
+        symbols = ["@", "!", ":", "(", ")", "RT", ",", "https", ".", "?", "#", "|", " ", "", "...", "..", "“", "``",
+                   "]", "[", "....", "…", "''", "-"]
 
         # Si no es uno de los símbolos, inserta el texto sin emojis
         for word in self.text_limpio:
-            if word not in symbols and word.find("//t.co/"):
-                self.text_without_emojis.append(emoji.get_emoji_regexp().sub(u'', word))
+            if word not in symbols and word.find("//t.co/") and word.find("//t.co…"):
+                self.text_without_emojis.append(emoji.get_emoji_regexp().sub(r'', word))
 
         for text in self.text_without_emojis:
-            self.all_tweets_text += text.lower() + " "
-            self.all_tweets_text_array.append(text)
+            if text != "":
+                self.all_tweets_text += text.lower() + " "
+                self.all_tweets_text_array.append(text)
 
         print(f"Stopwords: {self.text_limpio}")
         print(f"Text without emojis and symbols: {self.text_without_emojis}")
@@ -81,7 +81,7 @@ class Tokens:
         # Hemos cogido el listado de palabras generado antes self.text_limpio
         word_cloud = WordCloud(width=800, height=800,
                                background_color='purple',
-                               stopwords=self.all_tweets_text, max_words=40).generate(self.all_tweets_text)
+                               max_words=40).generate(self.all_tweets_text)
         # Visualizarlo
         plt.imshow(word_cloud, interpolation='bilinear')  # Mostrar el gráfico
         plt.axis('off')  # Quitar ejes
@@ -93,13 +93,14 @@ class Tokens:
         freq_distribution_probability = FreqDist(self.all_tweets_text_array)
         plt.title("PROBABILITY",
                   bbox={'facecolor': '0.8', 'pad': 5})
-
         freq_distribution_probability.plot(10, cumulative=False)
+        plt.tight_layout()
         plt.show()
 
     def sentimental_analysis(self):
         sia = SentimentIntensityAnalyzer()
         self.polarity = sia.polarity_scores(self.all_tweets_text)
+        print(f"Sentimental analysis polarity: {self.polarity}")
 
     def bar(self):
         eje_x = list(("negative", "neutral", "positive", "compound"))
@@ -113,34 +114,26 @@ class Tokens:
         plt.show()
 
     def pie_chart(self):
-        labels = '13 - 20 minutes', '21- 30 minutes', '31-39 minutes'
-
-        size1 = self.count_size_activity(20, 13)
-        size2 = self.count_size_activity(30, 21)
-        size3 = self.count_size_activity(39, 31)
+        labels = 'Spanish', 'Italy', 'Turkish'
+        language_tokenization = word_tokenize(self.language)
+        size1 = language_tokenization.count("es")
+        size2 = language_tokenization.count("it")
+        size3 = language_tokenization.count("tr")
         sizes = [size1, size2, size3]
 
         fig1, ax1 = plt.subplots()
         ax1.pie(sizes, labels=labels, autopct='%1.1f%%',
                 shadow=True, startangle=90)
         ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-        plt.title("Activity between 13:13:00 and 13:39:00 public tweets",
+        plt.title("Language tweets between 16:24:00 and 16:25:00 10 of May",
                   bbox={'facecolor': '0.8', 'pad': 5})
         plt.show()
 
-    def count_size_activity(self, counter, i):
-        start = i
-        size = 0
-        while start <= counter:
-            size += self.all_tweets_activity.count(f"{counter}")
-            start += 1
-        return size
-
     def start(self):
-        for i in range(self.barcelona.estimated_document_count()):
-            tweet1 = self.barcelona.find()[i]
+        for i in range(self.football.estimated_document_count()):
+            tweet1 = self.football.find()[i]
             self.text = tweet1['text']
-            self.activity = tweet1['created_at']
+            self.language += tweet1['lang'] + " "
             # Text mining
             self.tokenization()
             self.stopwords()
@@ -150,12 +143,14 @@ class Tokens:
         # Visualización de datos
         print(f"All clean words: {self.all_tweets_text}")
         self.word_cloud()
+        print(f"All clean words array: {self.all_tweets_text_array}")
         self.dist_probability()
 
         # Sentimental analysis
         tokens.sentimental_analysis()
         tokens.bar()
-        # print(self.all_tweets_activity)
+
+        # Extra graphic
         tokens.pie_chart()
 
 
