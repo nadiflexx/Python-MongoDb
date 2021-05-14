@@ -70,7 +70,7 @@ class Tokens:
         for text in self.text_without_emojis:
             if text != "":
                 self.all_tweets_text += text.lower() + " "
-                self.all_tweets_text_array.append(text)
+                self.all_tweets_text_array.append(text.lower())
 
         print(f"Stopwords: {self.text_limpio}")
         print(f"Text without emojis and symbols: {self.text_without_emojis}")
@@ -98,8 +98,19 @@ class Tokens:
         plt.show()
 
     def sentimental_analysis(self):
+        english_text = "The Israeli actress and former Miss Israel posted: 'Israel deserves to live as a free and " \
+                       "safe nation, adding: Our neighbours deserve the same. The comments attracted thousands of " \
+                       "replies - now switched off - leading to her name trending on Twitter. In her youth, " \
+                       "Gadot completed two years of mandatory military service. 'My heart breaks,' the 36-year-old " \
+                       "posted online. 'My country is at war. I worry for my family, my friends. I worry for my " \
+                       "people. This is a vicious cycle that has been going on for far too long. 'I pray for the " \
+                       "victims and their families. I pray for this unimaginable hostility to end, I pray for our " \
+                       "leaders to find the solution so we could live side by side in peace. I pray for better days.'" \
+                       "While some high-profile people, including US politician Ted Cruz, praised Gadot for her " \
+                       "remarks, many others reacted angrily. She was criticised by supporters of the Palestinian " \
+                       "cause, who pointed to her service in the Israeli military'. "
         sia = SentimentIntensityAnalyzer()
-        self.polarity = sia.polarity_scores(self.all_tweets_text)
+        self.polarity = sia.polarity_scores(english_text)
         print(f"Sentimental analysis polarity: {self.polarity}")
 
     def bar(self):
