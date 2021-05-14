@@ -140,6 +140,29 @@ class Tokens:
                   bbox={'facecolor': '0.8', 'pad': 5})
         plt.show()
 
+    def sentimental_analysis_alternative(self):
+        labels = self.polarity.keys()
+        polarity1 = self.polarity['neg']
+        polarity2 = self.polarity['neu']
+        polarity3 = self.polarity['pos']
+        polarity4 = self.polarity['compound']
+
+        labels = ["Polarities"]
+        width = 60                                                                    # the width of the bars: can also be len(x) sequence
+
+        fig, ax = plt.subplots()
+
+        ax.bar(labels, polarity1, width, yerr=polarity1, label='negative')
+        ax.bar(labels, polarity2, width, yerr=polarity2, bottom=polarity1,
+               label='neutral')
+        ax.bar(labels, polarity3, width, yerr=polarity3, bottom=polarity2,
+               label='positive')
+        ax.bar(labels, polarity4, width, yerr=polarity4, bottom=polarity3,
+               label='compound')
+        ax.legend()
+
+        plt.show()
+
     def start(self):
         for i in range(self.football.estimated_document_count()):
             tweet1 = self.football.find()[i]
@@ -163,6 +186,7 @@ class Tokens:
 
         # Extra graphic
         tokens.pie_chart()
+        tokens.sentimental_analysis_alternative()
 
 
 if __name__ == "__main__":
