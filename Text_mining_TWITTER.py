@@ -18,7 +18,8 @@ class Tokens:
         # Mongodb database and repository
         db = self.conn.Twitter
         # Collections
-        self.football = db.Futbol  # Platforms
+        self.football = db.Futbol
+        # Important variables to manipulate
         self.text = ""
         self.language = ""
         self.all_tweets_text = ""
@@ -29,75 +30,89 @@ class Tokens:
         text_tokenization = sent_tokenize(self.text)
 
         # Word tokenization
-        self.word_tokenizacion = word_tokenize(self.text)
+        self.word_tokenization = word_tokenize(self.text)
+
+        # Print tokenization about one text
         print(f"Sentence Tokenization: {text_tokenization}")
-        print(f"Word Tokenization: {self.word_tokenizacion}")
-
-    def frequency(self):
-
-        self.freq_distribution = FreqDist(self.word_tokenizacion)
-        freq_results = []
-        for word in self.text_without_emojis:
-            freq_count = word, self.freq_distribution.get(word)
-            freq_results.append(freq_count)
-        print(f"Frequency: {freq_results}")
+        print(f"Word Tokenization: {self.word_tokenization}")
 
     def stopwords(self):
-
-        # Recoger las palabras del set del corpus de nltk
+        # Pick up the stopwords of the set of the nltk corpus
         self.stop_words = set(stopwords.words("spanish"))
 
-        # Para cada palabra comprueba si está en la lista de "stopwords"
-        self.text_limpio = []
+        # For each word it checks if it is in the list of "stopwords"
+        self.text_without_stopwords = []
 
-        for word in self.word_tokenizacion:
+        for word in self.word_tokenization:
             if word not in self.stop_words:
-                self.text_limpio.append(word)
+                self.text_without_stopwords.append(word)
 
-        # Vamos a limpiar los carácteres especiales y espacios de los datos porque no nos aportan información
-        # Quitaremos símnolos de "@", "!", """, ":", "(, ")", "RT", ","
-
-        self.text_without_emojis = []
+        # To clean the special characters that doesn't provide any useful information we need to add them into an array
 
         symbols = ["@", "!", ":", "(", ")", "RT", ",", "https", ".", "?", "#", "|", " ", "", "...", "..", "“", "``",
                    "]", "[", "....", "…", "''", "-"]
 
-        # Si no es uno de los símbolos, inserta el texto sin emojis
-        for word in self.text_limpio:
+        # This variable is where we are going to store all the clean text
+        self.text_without_emojis = []
+
+        # If the word of the text is not a symbol we will append it to the clean text array.
+        for word in self.text_without_stopwords:
             if word not in symbols and word.find("//t.co/") and word.find("//t.co…"):
                 self.text_without_emojis.append(emoji.get_emoji_regexp().sub(r'', word))
 
+        # Also we need to add the clean text into variables that we are going to use in the WordCloud and Probability
         for text in self.text_without_emojis:
             if text != "":
                 self.all_tweets_text += text.lower() + " "
                 self.all_tweets_text_array.append(text.lower())
 
-        print(f"Stopwords: {self.text_limpio}")
+        # Print the text without stopwords and without symbols
+        print(f"Stopwords: {self.text_without_stopwords}")
         print(f"Text without emojis and symbols: {self.text_without_emojis}")
 
-    def word_cloud(self):
+    def frequency(self):
+        # Call frequency distribution function passing word tokenization by parameter
+        self.freq_distribution = FreqDist(self.word_tokenization)
+        freq_results = []
 
-        # Generar el gráfico
-        # Hemos cogido el listado de palabras generado antes self.text_limpio
+        # Loop through all the word from the text without emojis and add the word and the number of times that is
+        # repeated inside freq_result array. Then prints the information of each word.
+        for word in self.text_without_emojis:
+            freq_count = word, self.freq_distribution.get(word)
+            freq_results.append(freq_count)
+        print(f"Frequency: {freq_results}")
+
+    def word_cloud(self):
+        # To create a WordCloud graphic we need to specify the size of the graphic, the text that we are going to use
+        # (String of all words) and other parameters like the number of words that you want to show or the background
+        # color.
         word_cloud = WordCloud(width=800, height=800,
                                background_color='purple',
                                max_words=40).generate(self.all_tweets_text)
-        # Visualizarlo
-        plt.imshow(word_cloud, interpolation='bilinear')  # Mostrar el gráfico
-        plt.axis('off')  # Quitar ejes
+        # Here we call some functions to show the graphic
+        plt.imshow(word_cloud, interpolation='bilinear')
+        # Disable axis
+        plt.axis('off')
+        # Set title with a box.
         plt.title("WORD CLOUD",
                   bbox={'facecolor': '0.8', 'pad': 5})
-        plt.show()  # mostrar
+        # Show the graphic
+        plt.show()
 
     def dist_probability(self):
+        # Call frequency distribution function passing all clean words in a array.
         freq_distribution_probability = FreqDist(self.all_tweets_text_array)
+        # Set a title to the graphic
         plt.title("PROBABILITY",
                   bbox={'facecolor': '0.8', 'pad': 5})
+        # Calls plot function to set the number of words to show.
         freq_distribution_probability.plot(10, cumulative=False)
         plt.tight_layout()
+        # Shows the graphic
         plt.show()
 
     def sentimental_analysis(self):
+        # Here I pick an actual notice from BBC because sentimental analysis only works in English language.
         english_text = "The Israeli actress and former Miss Israel posted: 'Israel deserves to live as a free and " \
                        "safe nation, adding: Our neighbours deserve the same. The comments attracted thousands of " \
                        "replies - now switched off - leading to her name trending on Twitter. In her youth, " \
@@ -109,86 +124,108 @@ class Tokens:
                        "While some high-profile people, including US politician Ted Cruz, praised Gadot for her " \
                        "remarks, many others reacted angrily. She was criticised by supporters of the Palestinian " \
                        "cause, who pointed to her service in the Israeli military'. "
+        # Store sentimental analysis analyzer in a variable
         sia = SentimentIntensityAnalyzer()
+        # Save the results in the variable polarity.
         self.polarity = sia.polarity_scores(english_text)
+        # Prints the results.
         print(f"Sentimental analysis polarity: {self.polarity}")
 
     def bar(self):
+        # To show the sentimental analysis first of all we need to set up all the axis names and values
         eje_x = list(("negative", "neutral", "positive", "compound"))
         values = list(self.polarity.values())
-
         plt.bar(eje_x, values)
-        plt.xlabel("Tipos de sentimientos")
-        plt.ylabel("Polaridad de los sentimientos")
+        plt.xlabel("Types of feelings")
+        plt.ylabel("Feelings polarity")
         plt.title("SENTIMENTAL ANALYSIS",
                   bbox={'facecolor': '0.8', 'pad': 5})
+        # When all is set up we show the graphic
         plt.show()
 
     def pie_chart(self):
+        # Extra graphic pie.
+        # In this graphic I use all the languages of the 50 tweets between 16:24:00 and 16:25:00
         labels = 'Spanish', 'Italy', 'Turkish'
+        # Here I separate in words all the languages
         language_tokenization = word_tokenize(self.language)
+        # Then I count all the times one languages is repeated and store it in a variable
         size1 = language_tokenization.count("es")
         size2 = language_tokenization.count("it")
         size3 = language_tokenization.count("tr")
+        # After that I save all the variables in an array variable because this graphic needs an array to
+        # understand the values.
         sizes = [size1, size2, size3]
 
         fig1, ax1 = plt.subplots()
+        # Here we set up the graphic passing the necessary variables (Labels and values)
         ax1.pie(sizes, labels=labels, autopct='%1.1f%%',
                 shadow=True, startangle=90)
-        ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+        # Equal aspect ratio ensures that pie is drawn as a circle.
+        ax1.axis('equal')
         plt.title("Language tweets between 16:24:00 and 16:25:00 10 of May",
                   bbox={'facecolor': '0.8', 'pad': 5})
+        # Shows the graphic
         plt.show()
 
     def sentimental_analysis_alternative(self):
-        labels = self.polarity.keys()
-        polarity1 = self.polarity['neg']
-        polarity2 = self.polarity['neu']
-        polarity3 = self.polarity['pos']
-        polarity4 = self.polarity['compound']
-
+        # Here I create an alternative sentimental analysis graphic.
+        # As the pie graphic we need to set up all the values and the label name.
         labels = ["Polarities"]
-        width = 60                                                                    # the width of the bars: can also be len(x) sequence
+
+        polarity1 = self.polarity['neg']
+        polarity2 = self.polarity['pos']
+        polarity3 = self.polarity['neu']
+        polarity4 = self.polarity['compound']
+        width = 0.1
 
         fig, ax = plt.subplots()
-
-        ax.bar(labels, polarity1, width, yerr=polarity1, label='negative')
-        ax.bar(labels, polarity2, width, yerr=polarity2, bottom=polarity1,
-               label='neutral')
-        ax.bar(labels, polarity3, width, yerr=polarity3, bottom=polarity2,
+        # Then we have to put one value on top of the other thanks to the bottom attribute where we can specify which
+        # one will be below.
+        ax.bar(labels, polarity1, width, label='positive')
+        ax.bar(labels, polarity2, width, bottom=polarity1,
                label='positive')
-        ax.bar(labels, polarity4, width, yerr=polarity4, bottom=polarity3,
+        ax.bar(labels, polarity3, width, bottom=polarity2,
+               label='neutral')
+        ax.bar(labels, polarity4, width, bottom=polarity3,
                label='compound')
         ax.legend()
-
+        # Show the graphic
         plt.show()
 
     def start(self):
+        # Loops through all the tweets stored in the database
         for i in range(self.football.estimated_document_count()):
+            # Finds one tweet
             tweet1 = self.football.find()[i]
+            # Saves the text of a tweet.
             self.text = tweet1['text']
+            # Add the language of the tweet in a String format.
             self.language += tweet1['lang'] + " "
-            # Text mining
+
+            # For each tweet we are going to call the Text Mining functions
             self.tokenization()
             self.stopwords()
             self.frequency()
             print()
 
-        # Visualización de datos
+        # After all tweets are analyzed, we call graphic functions.
+        # Also we print all the clean words in String and Array format (That's because we We need them so that the
+        # graphics can interpret them)
         print(f"All clean words: {self.all_tweets_text}")
         self.word_cloud()
         print(f"All clean words array: {self.all_tweets_text_array}")
         self.dist_probability()
-
-        # Sentimental analysis
         tokens.sentimental_analysis()
         tokens.bar()
 
-        # Extra graphic
+        # Extra graphics
         tokens.pie_chart()
         tokens.sentimental_analysis_alternative()
 
 
 if __name__ == "__main__":
+    # Calls tokens class
     tokens = Tokens()
+    # Calls function start
     tokens.start()
