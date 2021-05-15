@@ -134,10 +134,15 @@ class Tokens:
     def bar(self):
         # To show the sentimental analysis first of all we need to set up all the axis names and values
         eje_x = list(("negative", "neutral", "positive", "compound"))
-        values = list(self.polarity.values())
+        polarity1 = self.polarity['neg']*100
+        polarity2 = self.polarity['neu']*100
+        polarity3 = self.polarity['pos']*100
+        polarity4 = self.polarity['compound']*100
+        values = [polarity1, polarity2, polarity3, polarity4]
+
         plt.bar(eje_x, values)
         plt.xlabel("Types of feelings")
-        plt.ylabel("Feelings polarity")
+        plt.ylabel("Feelings polarity (%)")
         plt.title("SENTIMENTAL ANALYSIS",
                   bbox={'facecolor': '0.8', 'pad': 5})
         # When all is set up we show the graphic
